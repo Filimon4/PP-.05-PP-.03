@@ -79,10 +79,10 @@ class Ui_MainWindow(object):
 
         self.buttons.addItem(self.verticalSpacer)
 
-        self.pushButton = QPushButton(self.central_widget)
-        self.pushButton.setObjectName(u"pushButton")
+        self.exit_but = QPushButton(self.central_widget)
+        self.exit_but.setObjectName(u"exit_but")
 
-        self.buttons.addWidget(self.pushButton)
+        self.buttons.addWidget(self.exit_but)
 
 
         self.horizontalLayout.addLayout(self.buttons)
@@ -419,7 +419,6 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.pushButton.clicked.connect(MainWindow.close)
 
         self.stackedWidget.setCurrentIndex(1)
 
@@ -435,7 +434,7 @@ class Ui_MainWindow(object):
         self.product_batches_but.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u0441\u0442\u0443\u043f\u043b\u0435\u043d\u0438\u044f", None))
         self.customers_but.setText(QCoreApplication.translate("MainWindow", u"\u041f\u043e\u043a\u0443\u043f\u0430\u0442\u0435\u043b\u0438", None))
         self.materials_but.setText(QCoreApplication.translate("MainWindow", u"\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u0412\u044b\u0445\u043e\u0434", None))
+        self.exit_but.setText(QCoreApplication.translate("MainWindow", u"\u0412\u044b\u0445\u043e\u0434", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0430\u043a\u0430\u0437\u044b", None))
         self.order_add.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c", None))
         self.order_change.setText(QCoreApplication.translate("MainWindow", u"\u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c", None))

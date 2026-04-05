@@ -556,13 +556,40 @@ class EmployeeAddDialog(QDialog):
         self.ui.position_combo.clear()
         self.ui.position_combo.addItems(positions_list)
     
+    def checkLoginUnique(self, login):
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                select
+                    e.id,
+                    e.login
+                from employees e
+                where e.login = %(login)s
+            """, {'login': login})
+            potentialUser = cur.fetchone()
+            if potentialUser:
+                QMessageBox.warning(self, "Ошибка", "Этот логин уже занят")
+                return False
+        return True
+
     def accept(self):
+        data = self.getData()
         is_valid, error_msg = self.validate()
-        
+
         if not is_valid:
             QMessageBox.warning(self, "Ошибка", error_msg)
             return
+
+        if not data['password']:
+            QMessageBox.warning(self, "Ошибка", "Поле пароль не может быть пустым")
+            return
+
+        if not data['login']:
+            QMessageBox.warning(self, "Ошибка", "Поле логин не может быть пустым")
+            return
         
+        if not self.checkLoginUnique(data['login']):
+            return
+
         super().accept()
 
 class EmployeeChangeDialog(EmployeeAddDialog):
@@ -587,6 +614,21 @@ class EmployeeChangeDialog(EmployeeAddDialog):
         index = self.ui.position_combo.findText(self.employee['position_title'])
         if index >= 0:
             self.ui.position_combo.setCurrentIndex(index)
+
+    def checkLoginUnique(self, login):
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                select
+                    e.id,
+                    e.login
+                from employees e
+                where e.login = %(login)s
+            """, {'login': login})
+            potentialUser = cur.fetchone()
+            if potentialUser and potentialUser['id'] != self.employee['id']:
+                QMessageBox.warning(self, "Ошибка", "Этот логин уже занят")
+                return False
+        return True
 
 # endregion
 
@@ -1276,22 +1318,10 @@ class CaptchaDialog(QDialog):
     def nextSet(self):
         self.set_i = (self.set_i + 1) % 4
 
-    def check(self):
-        if self.curr_try > 3:
-            return False
+    def isRight(self):
         if self.set_i == 0:
             return True
         return False
-    
-    def accept(self):
-        if self.curr_try > 3:
-            super().accept()
-
-        if self.set_i != 0:
-            self.curr_try += 1
-            return
-
-        super().accept()
 
 class AuthDialog(QDialog):
     def __init__(self, parent=None):
@@ -1305,6 +1335,14 @@ class AuthDialog(QDialog):
     def loginClicked(self):
         login = self.ui.login_input.text()
         password = self.ui.password_input.text()
+
+        if not login:
+            QMessageBox.warning(self, "Ошибка", "Поле логин пустое")
+            return
+        
+        if not password:
+            QMessageBox.warning(self, "Ошибка", "Поле пароль пустое")
+            return
 
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
@@ -1328,19 +1366,44 @@ class AuthDialog(QDialog):
             QMessageBox.warning(self, "Ошибка", "Вы заблокированы. Обратитесь к администратору")
             return
         
-        capthca = CaptchaDialog()
-        if capthca.exec() == QDialog.DialogCode.Accepted:
-            isRight = capthca.check()
+        captcha = CaptchaDialog()
+        if captcha.exec() == QDialog.DialogCode.Accepted:
+            isRight = captcha.isRight()
             if not isRight:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
                     cur.execute("""
-                        update employees
-                        set blocked = true
-                        where id = %(id)s
+                        select
+                            e.failed_attempts
+                        from employees e
+                        where e.id = %(id)s
                     """, {'id': self.user['id']})
+                    attempts = cur.fetchone()
+                
+                attempts['failed_attempts'] += 1
+
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute("""
+                        update employees
+                        set failed_attempts = %(attempts)s
+                        where id = %(id)s
+                    """, {'id': self.user['id'], 'attempts': attempts['failed_attempts']})
                     conn.commit()
-                QMessageBox.warning(self, "Ошибка", "Вы заблокированы. Обратитесь к администратору")
-                return
+
+                if attempts['failed_attempts'] >= 3:
+                    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                        cur.execute("""
+                            update employees
+                            set blocked = true
+                            where id = %(id)s
+                        """, {'id': self.user['id']})
+                        conn.commit()
+                    QMessageBox.warning(self, "Ошибка", "Вы заблокированы. Обратитесь к администратору")
+                    return
+                else:
+                    QMessageBox.warning(self, "Ошибка", "Капча не пройдена, повторите попытку")
+                    return
+            else:
+                QMessageBox.information(self, "Инфо", "Вы успешно авторизовались")
         else:
             QMessageBox.warning(self, "Ошибка", "Повторите ввод каптчи")
             return
@@ -1355,6 +1418,7 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
         self.ui.stackedWidget.setCurrentIndex(0)
         self.ui.orders_but.setChecked(True)
+        self.ui.exit_but.clicked.connect(self.exitButtonClicked)
 
         # menu
         self.ui.customers_but.clicked.connect       (self.customersClicked)
@@ -1399,6 +1463,19 @@ class MainWindow(QMainWindow):
         self.ui.product_load.clicked.connect    (self.productLoad)
         self.ui.product_delete.clicked.connect  (self.productDelete)
 
+        self.ui.central_widget.setEnabled(False)
+        dialog = AuthDialog()
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self.role = dialog.user['role_code']
+            self.ui.central_widget.setEnabled(True)
+        else:
+            sys.exit()
+
+        if self.role != 'admin':
+            self.ui.employees_but.setEnabled(False)
+            self.ui.employees_but.deleteLater()
+
+    def exitButtonClicked(self):
         self.ui.central_widget.setEnabled(False)
         dialog = AuthDialog()
         if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -1793,6 +1870,7 @@ class MainWindow(QMainWindow):
                     e.login,
                     e.password,
                     e.blocked,
+                    e.failed_attempts,
                     ep.title as position_title
                 from employees e
                 left join employee_positions ep on ep.id = e.position_id
@@ -1817,11 +1895,12 @@ class MainWindow(QMainWindow):
                     where ep.title = %(title)s
                 """, {'title': data['position_title']})
                 position = cur.fetchone()
+
                 if not position:
                     raise Exception(f"Position with code '{data['position_title']}' not found")
                 cur.execute("""
-                    INSERT INTO employees (first_name, family_name, last_name, email, phone, position_id, address)
-                    VALUES (%(first_name)s, %(family_name)s, %(last_name)s, %(email)s, %(phone)s, %(position_id)s, %(address)s)
+                    INSERT INTO employees (first_name, family_name, last_name, email, phone, position_id, address, login, password, blocked)
+                    VALUES (%(first_name)s, %(family_name)s, %(last_name)s, %(email)s, %(phone)s, %(position_id)s, %(address)s, %(login)s, %(password)s, %(blocked)s)
                 """, {
                     'first_name': data['first_name'],
                     'family_name': data['family_name'],
@@ -1829,7 +1908,10 @@ class MainWindow(QMainWindow):
                     'email': data['email'],
                     'phone': data['phone'],
                     'position_id': position['id'],
-                    'address': data['address']
+                    'address': data['address'],
+                    'login': data['login'],
+                    'password': data['password'],
+                    'blocked': data['blocked']
                 })
                 conn.commit()
             self.employeeLoad()
@@ -1861,8 +1943,10 @@ class MainWindow(QMainWindow):
                     where ep.title = %(title)s
                 """, {'title': data['position_title']})
                 position = cur.fetchone()
+
                 if not position:
                     raise Exception(f"Position with code '{data['position_title']}' not found")
+                
                 cur.execute("""
                     UPDATE employees
                     SET first_name = %(first_name)s,
@@ -1874,7 +1958,8 @@ class MainWindow(QMainWindow):
                         position_id = %(position_id)s,
                         login = %(login)s,
                         password = %(password)s,
-                        blocked = %(blocked)s
+                        blocked = %(blocked)s,
+                        failed_attempts = %(failed_attempts)s
                     WHERE id = %(id)s
                     RETURNING id
                 """, {
@@ -1888,7 +1973,8 @@ class MainWindow(QMainWindow):
                     'position_id': position['id'],
                     'login': data['login'],
                     'password': data['password'],
-                    'blocked': data['blocked']
+                    'blocked': data['blocked'],
+                    'failed_attempts': 0 if data['blocked'] == False else item['failed_attempts']
                 })
                 cur.fetchone()
                 conn.commit()
