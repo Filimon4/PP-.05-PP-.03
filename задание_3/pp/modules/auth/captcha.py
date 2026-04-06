@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QDialog
-from PySide6.QtCore import Qt, QSize 
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtGui import QPixmap
 from ui_captha import Ui_captcha
 
 class CaptchaDialog(QDialog):
