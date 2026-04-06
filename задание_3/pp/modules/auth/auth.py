@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt
 from ui_auth import Ui_auth
 from common.db import conn
 from psycopg2.extras import RealDictCursor
-from auth.captcha import CaptchaDialog
+from modules.auth.captcha import CaptchaDialog
 
 class AuthDialog(QDialog):
     def __init__(self, parent=None):
