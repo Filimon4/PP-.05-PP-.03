@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex, QDateTime, QDate 
-from ui_product_batch import Ui_add_product_batch
+from modules.product_baches.ui_product_batch import Ui_add_product_batch
 
 class ProductBatchListModel(QAbstractListModel):
     def __init__(self, batches=[]):

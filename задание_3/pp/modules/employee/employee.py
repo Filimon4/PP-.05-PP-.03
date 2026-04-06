@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
-from ui_add_employee import Ui_add_employee
+from modules.employee.ui_add_employee import Ui_add_employee
 from common.db import conn
 from psycopg2.extras import RealDictCursor
 

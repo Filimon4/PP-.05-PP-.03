@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
-from ui_material_add import Ui_material_add
+from modules.material.ui_material_add import Ui_material_add
 
 class MaterialsListModel(QAbstractListModel):
     def __init__(self, materials=[]):

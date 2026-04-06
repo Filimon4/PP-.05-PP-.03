@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import QDialog, QMessageBox, QPushButton
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex, QDate 
-from ui_order import Ui_order
+from modules.orders.ui_order import Ui_order
 from common.db import conn
 from psycopg2.extras import RealDictCursor
-from modules.order_items import OrderItemsAddDialog, OrderItemsChangeDialog, OrderItemsListModel
+from modules.order_items.order_items import OrderItemsAddDialog, OrderItemsChangeDialog, OrderItemsListModel
 
 class OrdersListModel(QAbstractListModel):
     def __init__(self, orders=None):

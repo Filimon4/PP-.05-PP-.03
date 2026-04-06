@@ -1,22 +1,22 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QMessageBox
 from PySide6.QtCore import Qt
-from ui_mainwindow import Ui_MainWindow
+from modules.mainwindow.ui_mainwindow import Ui_MainWindow
 
 from psycopg2.extras import RealDictCursor
 
-import resources_rc
+import shared.resources_rc as resources_rc
 
 from common.db import conn
 from psycopg2.extras import RealDictCursor
 
-from modules.customer import CustomerAddDialog, CustomerChangeDialog, CustomerListModel
-from modules.employee import EmployeeAddDialog, EmployeeChangeDialog, EmployeeListModel
-from modules.material import MaterialAddDialog, MaterialChangeDialog, MaterialsListModel
-from modules.orders import OrdersAddDialog, OrdersChangeDialog, OrdersListModel
-from modules.product import ProductAddDialog, ProductChangeDialog, ProductListModel
+from modules.customer.customer import CustomerAddDialog, CustomerChangeDialog, CustomerListModel
+from modules.employee.employee import EmployeeAddDialog, EmployeeChangeDialog, EmployeeListModel
+from modules.material.material import MaterialAddDialog, MaterialChangeDialog, MaterialsListModel
+from modules.orders.orders import OrdersAddDialog, OrdersChangeDialog, OrdersListModel
+from modules.product.product import ProductAddDialog, ProductChangeDialog, ProductListModel
 from modules.auth.auth import AuthDialog
-from modules.product_baches import ProductBatchAddDialog, ProductBatchChangeDialog, ProductBatchListModel
+from modules.product_baches.product_baches import ProductBatchAddDialog, ProductBatchChangeDialog, ProductBatchListModel
 
 class MainWindow(QMainWindow):
     def __init__(self):

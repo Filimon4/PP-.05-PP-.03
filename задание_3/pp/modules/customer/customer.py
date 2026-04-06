@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
-from ui_add_customer import Ui_add_customer
+from modules.customer.ui_add_customer import Ui_add_customer
 
 class CustomerListModel(QAbstractListModel):
     def __init__(self, customers=[]):

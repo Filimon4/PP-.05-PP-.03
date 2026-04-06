@@ -1,7 +1,7 @@
 
 from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
-from ui_order_item import Ui_order_item
+from modules.order_items.ui_order_item import Ui_order_item
 
 class OrderItemsListModel(QAbstractListModel):
     def __init__(self, orderItems=[]):

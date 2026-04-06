@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QMessageBox
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex, QDateTime, QDate, QSize 
-from ui_add_product import Ui_add_product
+from modules.product.ui_add_product import Ui_add_product
 from common.db import conn
 from psycopg2.extras import RealDictCursor
-from modules.bill_of_material import BillOfMaterialAddDialog, BillOfMaterialChangeDialog, BillOfMaterialListModel
+from modules.bill_of_material.bill_of_material import BillOfMaterialAddDialog, BillOfMaterialChangeDialog, BillOfMaterialListModel
 
 class ProductListModel(QAbstractListModel):
     def __init__(self, products=[]):

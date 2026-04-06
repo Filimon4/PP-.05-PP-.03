@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtCore import Qt 
-from ui_auth import Ui_auth
+from modules.auth.ui_auth import Ui_auth
 from common.db import conn
 from psycopg2.extras import RealDictCursor
-from modules.auth.captcha import CaptchaDialog
+from modules.auth.capcha.captcha import CaptchaDialog
 
 class AuthDialog(QDialog):
     def __init__(self, parent=None):
