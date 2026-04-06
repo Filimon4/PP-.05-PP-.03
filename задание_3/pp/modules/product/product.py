@@ -1,9 +1,11 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QMessageBox
-from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex, QDateTime, QDate, QSize 
+from PySide6.QtWidgets import QDialog
+from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
+from PySide6.QtGui import QPixmap
 from modules.product.ui_add_product import Ui_add_product
 from common.db import conn
 from psycopg2.extras import RealDictCursor
 from modules.bill_of_material.bill_of_material import BillOfMaterialAddDialog, BillOfMaterialChangeDialog, BillOfMaterialListModel
+from common.messageBox import MessageBox
 
 class ProductListModel(QAbstractListModel):
     def __init__(self, products=[]):
@@ -31,7 +33,8 @@ class ProductAddDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_add_product()
-        self.ui.setupUi(self) 
+        self.ui.setupUi(self)
+        self.setWindowIcon(QPixmap('icons/house-with-window.png'))
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint)
 
         self.ui.bill_of_material_list.setEnabled(False)
@@ -83,7 +86,7 @@ class ProductAddDialog(QDialog):
         is_valid, error_msg = self.validate()
         
         if not is_valid:
-            QMessageBox.warning(self, "Ошибка", error_msg)
+            MessageBox.warning(self, "Ошибка", error_msg)
             return
         
         super().accept()
@@ -157,13 +160,13 @@ class ProductChangeDialog(ProductAddDialog):
 
     def billOfMaterialDelete(self):
         if not self.ui.bill_of_material_list.selectionModel(): 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected = self.ui.bill_of_material_list.selectionModel().selectedIndexes()
         
         if not selected: 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected_index = selected[0]
@@ -183,13 +186,13 @@ class ProductChangeDialog(ProductAddDialog):
 
     def billOfMaterialChange(self):
         if not self.ui.bill_of_material_list.selectionModel(): 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected = self.ui.bill_of_material_list.selectionModel().selectedIndexes()
         
         if not selected: 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected_index = selected[0]

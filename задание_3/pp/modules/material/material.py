@@ -1,6 +1,8 @@
-from PySide6.QtWidgets import QDialog, QMessageBox
+from PySide6.QtWidgets import QDialog
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
+from PySide6.QtGui import QPixmap
 from modules.material.ui_material_add import Ui_material_add
+from common.messageBox import MessageBox
 
 class MaterialsListModel(QAbstractListModel):
     def __init__(self, materials=[]):
@@ -29,6 +31,7 @@ class MaterialAddDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_material_add()
         self.ui.setupUi(self) 
+        self.setWindowIcon(QPixmap('icons/house-with-window.png'))
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint)
     
     def getData(self):
@@ -72,7 +75,7 @@ class MaterialAddDialog(QDialog):
         is_valid, error_msg = self.validate()
         
         if not is_valid:
-            QMessageBox.warning(self, "Ошибка", error_msg)
+            MessageBox.warning(self, "Ошибка", error_msg)
             return
         
         super().accept()

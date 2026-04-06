@@ -1,13 +1,18 @@
-from PySide6.QtWidgets import QDialog, QMessageBox
-from PySide6.QtCore import Qt 
+from PySide6.QtWidgets import QDialog
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap
 from modules.auth.ui_auth import Ui_auth
 from common.db import conn
 from psycopg2.extras import RealDictCursor
 from modules.auth.capcha.captcha import CaptchaDialog
+from common.messageBox import MessageBox
 
 class AuthDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        self.setWindowIcon(QPixmap("icons/house-with-window.png"))
+
         self.ui = Ui_auth()
         self.ui.setupUi(self)
         self.setWindowFlags(Qt.WindowType.Dialog)
@@ -19,11 +24,11 @@ class AuthDialog(QDialog):
         password = self.ui.password_input.text()
 
         if not login:
-            QMessageBox.warning(self, "Ошибка", "Поле логин пустое")
+            MessageBox.warning(self, "Ошибка", "Поле логин пустое")
             return
         
         if not password:
-            QMessageBox.warning(self, "Ошибка", "Поле пароль пустое")
+            MessageBox.warning(self, "Ошибка", "Поле пароль пустое")
             return
 
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -41,11 +46,11 @@ class AuthDialog(QDialog):
             self.user = cur.fetchone()
 
         if self.user is None:
-            QMessageBox.warning(self, "Ошибка", "Вы ввели неверный логин или пароль. Пожалуйста проверьте ещё раз введенные данные")
+            MessageBox.warning(self, "Ошибка", "Вы ввели неверный логин или пароль. Пожалуйста проверьте ещё раз введенные данные")
             return
         
         if self.user['blocked'] == True:
-            QMessageBox.warning(self, "Ошибка", "Вы заблокированы. Обратитесь к администратору")
+            MessageBox.warning(self, "Ошибка", "Вы заблокированы. Обратитесь к администратору")
             return
         
         captcha = CaptchaDialog()
@@ -79,15 +84,15 @@ class AuthDialog(QDialog):
                             where id = %(id)s
                         """, {'id': self.user['id']})
                         conn.commit()
-                    QMessageBox.warning(self, "Ошибка", "Вы заблокированы. Обратитесь к администратору")
+                    MessageBox.warning(self, "Ошибка", "Вы заблокированы. Обратитесь к администратору")
                     return
                 else:
-                    QMessageBox.warning(self, "Ошибка", "Капча не пройдена, повторите попытку")
+                    MessageBox.warning(self, "Ошибка", "Капча не пройдена, повторите попытку")
                     return
             else:
-                QMessageBox.information(self, "Инфо", "Вы успешно авторизовались")
+                MessageBox.information(self, "Инфо", "Вы успешно авторизовались")
         else:
-            QMessageBox.warning(self, "Ошибка", "Повторите ввод каптчи")
+            MessageBox.warning(self, "Ошибка", "Повторите ввод каптчи")
             return
 
         super().accept()

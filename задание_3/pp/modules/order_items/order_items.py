@@ -1,7 +1,8 @@
 
-from PySide6.QtWidgets import QDialog, QMessageBox
+from PySide6.QtWidgets import QDialog
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
 from modules.order_items.ui_order_item import Ui_order_item
+from common.messageBox import MessageBox
 
 class OrderItemsListModel(QAbstractListModel):
     def __init__(self, orderItems=[]):
@@ -72,7 +73,7 @@ class OrderItemsAddDialog(QDialog):
         is_valid, error_msg = self.validate()
         
         if not is_valid:
-            QMessageBox.warning(self, "Ошибка", error_msg)
+            MessageBox.warning(self, "Ошибка", error_msg)
             return
         
         super().accept()

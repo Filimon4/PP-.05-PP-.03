@@ -1,6 +1,7 @@
-from PySide6.QtWidgets import QDialog, QMessageBox
+from PySide6.QtWidgets import QDialog
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex 
 from modules.bill_of_material.ui_bill_of_material import Ui_bill_of_material
+from common.messageBox import MessageBox
 
 class BillOfMaterialListModel(QAbstractListModel):
     def __init__(self, billOfMaterials=[]):
@@ -65,7 +66,7 @@ class BillOfMaterialAddDialog(QDialog):
         is_valid, error_msg = self.validate()
         
         if not is_valid:
-            QMessageBox.warning(self, "Ошибка", error_msg)
+            MessageBox.warning(self, "Ошибка", error_msg)
             return
         
         super().accept()

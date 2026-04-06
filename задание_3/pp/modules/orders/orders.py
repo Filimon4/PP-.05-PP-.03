@@ -1,9 +1,11 @@
-from PySide6.QtWidgets import QDialog, QMessageBox, QPushButton
+from PySide6.QtWidgets import QDialog, QPushButton
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex, QDate 
+from PySide6.QtGui import QPixmap
 from modules.orders.ui_order import Ui_order
 from common.db import conn
 from psycopg2.extras import RealDictCursor
 from modules.order_items.order_items import OrderItemsAddDialog, OrderItemsChangeDialog, OrderItemsListModel
+from common.messageBox import MessageBox
 
 class OrdersListModel(QAbstractListModel):
     def __init__(self, orders=None):
@@ -32,6 +34,7 @@ class OrdersAddDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_order()
         self.ui.setupUi(self) 
+        self.setWindowIcon(QPixmap('icons/house-with-window.png'))
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint)
 
         self.ui.order_item_list.setEnabled(False)
@@ -79,7 +82,7 @@ class OrdersAddDialog(QDialog):
         is_valid, error_msg = self.validate()
         
         if not is_valid:
-            QMessageBox.warning(self, "Ошибка", error_msg)
+            MessageBox.warning(self, "Ошибка", error_msg)
             return
         
         super().accept()
@@ -122,7 +125,6 @@ class OrdersChangeDialog(OrdersAddDialog):
             
             closed_ids = []
 
-            print(self.orderItems)
             for item in self.orderItems:
                 total_batch_quantity = sum(
                     batch['quantity'] for batch in self.batches 
@@ -149,21 +151,24 @@ class OrdersChangeDialog(OrdersAddDialog):
                 self.accept()
             except Exception as e:
                 conn.rollback()
-                QMessageBox.critical(self, "Ошибка", f"Ошибка при отмене заказа: {str(e)}")
+                MessageBox.critical(self, "Ошибка", f"Ошибка при отмене заказа: {str(e)}")
 
     def closeOrder(self):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             try:
+                # Начало транзакции
                 cur.execute("BEGIN")
                 
                 for item in self.orderItems:
+                    # Позиция по заказу
                     batch = list(filter(lambda x: x['product_id'] == item['product_id'], list(self.batches)))[0]
+                    # Остаток по продукту
                     remaining_quantity = batch['quantity'] - item['quantity']
-                    print(remaining_quantity)
 
                     if remaining_quantity < 0:
                         raise Exception("Не достаточно товара для закрытия заказа")
                     
+                    # Сохранение остатка на складе
                     if remaining_quantity > 0:
                         cur.execute("""
                             INSERT INTO product_batches (product_id, order_id, date, quantity)
@@ -172,7 +177,8 @@ class OrdersChangeDialog(OrdersAddDialog):
                             'product_id': item['product_id'],
                             'remain': remaining_quantity
                         })
-
+                    
+                    # Вычитание проданного
                     cur.execute("""
                         INSERT INTO product_batches (product_id, order_id, date, quantity)
                         VALUES (%(product_id)s, %(order_id)s, CURRENT_TIMESTAMP, %(total)s)
@@ -182,16 +188,19 @@ class OrdersChangeDialog(OrdersAddDialog):
                         'total': item['quantity'] * (-1)
                     })
 
+                # Закрытие сделки
                 cur.execute("""
                     UPDATE orders 
                     SET status_id = (SELECT id FROM order_statuses WHERE code = 'closed')
                     WHERE id = %(order_id)s
                 """, {'order_id': self.order['id']})
+
+                # Фиксируем транзакцию
                 conn.commit()
                 self.accept()
             except Exception as e:
                 conn.rollback()
-                QMessageBox.critical(self, "Ошибка", f"Ошибка при закрытии заказа: {str(e)}")
+                MessageBox.critical(self, "Ошибка", f"Ошибка при закрытии заказа: {str(e)}")
 
     # region order_items
 
@@ -233,13 +242,13 @@ class OrdersChangeDialog(OrdersAddDialog):
 
     def orderItemsChange(self):
         if not self.ui.order_item_list.selectionModel(): 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected = self.ui.order_item_list.selectionModel().selectedIndexes()
         
         if not selected: 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected_index = selected[0]
@@ -288,13 +297,13 @@ class OrdersChangeDialog(OrdersAddDialog):
 
     def orderItemsDelete(self):
         if not self.ui.order_item_list.selectionModel(): 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected = self.ui.order_item_list.selectionModel().selectedIndexes()
         
         if not selected: 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected_index = selected[0]
@@ -342,7 +351,6 @@ class OrdersChangeDialog(OrdersAddDialog):
     # endregion
 
     def setDefault(self):
-        print(self.order)
         self.ui.order_date.setDate(self.order['date'])
 
         index = self.ui.order_customer_combo.findText(self.order['customer_name'])

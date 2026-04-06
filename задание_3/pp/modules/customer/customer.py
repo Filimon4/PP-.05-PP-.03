@@ -1,6 +1,8 @@
-from PySide6.QtWidgets import QDialog, QMessageBox
+from PySide6.QtWidgets import QDialog
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
+from PySide6.QtGui import QPixmap
 from modules.customer.ui_add_customer import Ui_add_customer
+from common.messageBox import MessageBox
 
 class CustomerListModel(QAbstractListModel):
     def __init__(self, customers=[]):
@@ -31,6 +33,7 @@ class CustomerAddDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_add_customer()
         self.ui.setupUi(self) 
+        self.setWindowIcon(QPixmap('icons/house-with-window.png'))
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint)
     
     def getData(self):
@@ -73,7 +76,7 @@ class CustomerAddDialog(QDialog):
         is_valid, error_msg = self.validate()
         
         if not is_valid:
-            QMessageBox.warning(self, "Ошибка", error_msg)
+            MessageBox.warning(self, "Ошибка", error_msg)
             return
         
         super().accept()

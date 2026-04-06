@@ -25,50 +25,50 @@ class Ui_MainWindow(object):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(1036, 620)
-        self.central_widget = QWidget(MainWindow)
-        self.central_widget.setObjectName(u"central_widget")
-        self.central_widget.setEnabled(True)
-        self.horizontalLayout = QHBoxLayout(self.central_widget)
+        self.main_layout = QWidget(MainWindow)
+        self.main_layout.setObjectName(u"main_layout")
+        self.main_layout.setEnabled(True)
+        self.horizontalLayout = QHBoxLayout(self.main_layout)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.buttons = QVBoxLayout()
         self.buttons.setSpacing(0)
         self.buttons.setObjectName(u"buttons")
-        self.orders_but = QPushButton(self.central_widget)
+        self.orders_but = QPushButton(self.main_layout)
         self.orders_but.setObjectName(u"orders_but")
         self.orders_but.setCheckable(True)
         self.orders_but.setAutoExclusive(True)
 
         self.buttons.addWidget(self.orders_but)
 
-        self.employees_but = QPushButton(self.central_widget)
+        self.employees_but = QPushButton(self.main_layout)
         self.employees_but.setObjectName(u"employees_but")
         self.employees_but.setCheckable(True)
         self.employees_but.setAutoExclusive(True)
 
         self.buttons.addWidget(self.employees_but)
 
-        self.products_but = QPushButton(self.central_widget)
+        self.products_but = QPushButton(self.main_layout)
         self.products_but.setObjectName(u"products_but")
         self.products_but.setCheckable(True)
         self.products_but.setAutoExclusive(True)
 
         self.buttons.addWidget(self.products_but)
 
-        self.product_batches_but = QPushButton(self.central_widget)
+        self.product_batches_but = QPushButton(self.main_layout)
         self.product_batches_but.setObjectName(u"product_batches_but")
         self.product_batches_but.setCheckable(True)
         self.product_batches_but.setAutoExclusive(True)
 
         self.buttons.addWidget(self.product_batches_but)
 
-        self.customers_but = QPushButton(self.central_widget)
+        self.customers_but = QPushButton(self.main_layout)
         self.customers_but.setObjectName(u"customers_but")
         self.customers_but.setCheckable(True)
         self.customers_but.setAutoExclusive(True)
 
         self.buttons.addWidget(self.customers_but)
 
-        self.materials_but = QPushButton(self.central_widget)
+        self.materials_but = QPushButton(self.main_layout)
         self.materials_but.setObjectName(u"materials_but")
         self.materials_but.setCheckable(True)
         self.materials_but.setAutoExclusive(True)
@@ -79,7 +79,7 @@ class Ui_MainWindow(object):
 
         self.buttons.addItem(self.verticalSpacer)
 
-        self.exit_but = QPushButton(self.central_widget)
+        self.exit_but = QPushButton(self.main_layout)
         self.exit_but.setObjectName(u"exit_but")
 
         self.buttons.addWidget(self.exit_but)
@@ -87,7 +87,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addLayout(self.buttons)
 
-        self.menu = QWidget(self.central_widget)
+        self.menu = QWidget(self.main_layout)
         self.menu.setObjectName(u"menu")
         self.menu.setEnabled(True)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -413,7 +413,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.menu)
 
-        MainWindow.setCentralWidget(self.central_widget)
+        MainWindow.setCentralWidget(self.main_layout)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
         MainWindow.setStatusBar(self.statusbar)
@@ -427,7 +427,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"\u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u043e\u043d\u043d\u0430\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0430 \u0434\u043b\u044f \u043c\u043e\u043b\u043e\u0447\u043d\u043e\u0433\u043e \u043a\u043e\u043c\u0431\u0438\u043d\u0430\u0442\u0430", None))
         self.orders_but.setText(QCoreApplication.translate("MainWindow", u"\u0417\u0430\u043a\u0430\u0437\u044b", None))
         self.employees_but.setText(QCoreApplication.translate("MainWindow", u"\u0421\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0438", None))
         self.products_but.setText(QCoreApplication.translate("MainWindow", u"\u041f\u0440\u043e\u0434\u0443\u043a\u0442\u044b", None))

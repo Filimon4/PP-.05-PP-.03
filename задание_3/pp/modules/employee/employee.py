@@ -1,8 +1,10 @@
-from PySide6.QtWidgets import QDialog, QMessageBox
+from PySide6.QtWidgets import QDialog
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
+from PySide6.QtGui import QPixmap
 from modules.employee.ui_add_employee import Ui_add_employee
 from common.db import conn
 from psycopg2.extras import RealDictCursor
+from common.messageBox import MessageBox
 
 class EmployeeListModel(QAbstractListModel):
     def __init__(self, employee=[]):
@@ -30,7 +32,8 @@ class EmployeeAddDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_add_employee()
-        self.ui.setupUi(self) 
+        self.ui.setupUi(self)
+        self.setWindowIcon(QPixmap('icons/house-with-window.png'))
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint)
     
     def getData(self):
@@ -90,7 +93,7 @@ class EmployeeAddDialog(QDialog):
             """, {'login': login})
             potentialUser = cur.fetchone()
             if potentialUser:
-                QMessageBox.warning(self, "Ошибка", "Этот логин уже занят")
+                MessageBox.warning(self, "Ошибка", "Этот логин уже занят")
                 return False
         return True
 
@@ -99,15 +102,15 @@ class EmployeeAddDialog(QDialog):
         is_valid, error_msg = self.validate()
 
         if not is_valid:
-            QMessageBox.warning(self, "Ошибка", error_msg)
+            MessageBox.warning(self, "Ошибка", error_msg)
             return
 
         if not data['password']:
-            QMessageBox.warning(self, "Ошибка", "Поле пароль не может быть пустым")
+            MessageBox.warning(self, "Ошибка", "Поле пароль не может быть пустым")
             return
 
         if not data['login']:
-            QMessageBox.warning(self, "Ошибка", "Поле логин не может быть пустым")
+            MessageBox.warning(self, "Ошибка", "Поле логин не может быть пустым")
             return
         
         if not self.checkLoginUnique(data['login']):
@@ -149,6 +152,6 @@ class EmployeeChangeDialog(EmployeeAddDialog):
             """, {'login': login})
             potentialUser = cur.fetchone()
             if potentialUser and potentialUser['id'] != self.employee['id']:
-                QMessageBox.warning(self, "Ошибка", "Этот логин уже занят")
+                MessageBox.warning(self, "Ошибка", "Этот логин уже занят")
                 return False
         return True

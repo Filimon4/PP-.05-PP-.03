@@ -29,6 +29,7 @@ class Ui_auth(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(auth.sizePolicy().hasHeightForWidth())
         auth.setSizePolicy(sizePolicy)
+        auth.setMinimumSize(QSize(200, 200))
         self.horizontalLayout = QHBoxLayout(auth)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.frame = QFrame(auth)
@@ -107,7 +108,7 @@ class Ui_auth(object):
     # setupUi
 
     def retranslateUi(self, auth):
-        auth.setWindowTitle(QCoreApplication.translate("auth", u"Form", None))
+        auth.setWindowTitle(QCoreApplication.translate("auth", u"\u0410\u0443\u043d\u0442\u0435\u0444\u0438\u043a\u0430\u0446\u0438\u044f", None))
         self.label.setText(QCoreApplication.translate("auth", u"\u0410\u0432\u0442\u043e\u0440\u0438\u0437\u0430\u0446\u0438\u044f", None))
         self.label_2.setText(QCoreApplication.translate("auth", u"\u041b\u043e\u0433\u0438\u043d", None))
         self.label_3.setText(QCoreApplication.translate("auth", u"\u041f\u0430\u0440\u043e\u043b\u044c", None))

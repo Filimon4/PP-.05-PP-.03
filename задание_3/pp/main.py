@@ -1,7 +1,9 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QDialog, QMessageBox
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QMainWindow, QDialog
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtGui import QPixmap
 from modules.mainwindow.ui_mainwindow import Ui_MainWindow
+from common.messageBox import MessageBox
 
 from psycopg2.extras import RealDictCursor
 
@@ -21,6 +23,10 @@ from modules.product_baches.product_baches import ProductBatchAddDialog, Product
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
+
+        self.icon = QPixmap("icons/house-with-window.png")
+        self.icon = self.icon.scaled(QSize(150,150))
+        self.setWindowIcon(self.icon)
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -71,11 +77,11 @@ class MainWindow(QMainWindow):
         self.ui.product_load.clicked.connect    (self.productLoad)
         self.ui.product_delete.clicked.connect  (self.productDelete)
 
-        self.ui.central_widget.setEnabled(False)
+        self.ui.main_layout.setEnabled(False)
         dialog = AuthDialog()
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.role = dialog.user['role_code']
-            self.ui.central_widget.setEnabled(True)
+            self.ui.main_layout.setEnabled(True)
         else:
             sys.exit()
 
@@ -84,11 +90,11 @@ class MainWindow(QMainWindow):
             self.ui.employees_but.deleteLater()
 
     def exitButtonClicked(self):
-        self.ui.central_widget.setEnabled(False)
+        self.ui.main_layout.setEnabled(False)
         dialog = AuthDialog()
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.role = dialog.user['role_code']
-            self.ui.central_widget.setEnabled(True)
+            self.ui.main_layout.setEnabled(True)
         else:
             sys.exit()
 
@@ -158,6 +164,7 @@ class MainWindow(QMainWindow):
 
     def ordersAdd(self):
         dialog = OrdersAddDialog()
+        dialog.setWindowTitle("Добавление заказа")
         customers = self.getCustomers()
         dialog.setCustomers(list(map(lambda u: u['customer_name'], list(customers))))
         statuses = self.setStatuses()
@@ -224,19 +231,20 @@ class MainWindow(QMainWindow):
         
     def orderChange(self):
         if not self.ui.order_list.selectionModel():
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
 
         selected = self.ui.order_list.selectionModel().selectedIndexes()
         
         if not selected:
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected_index = selected[0]
         item = self.ui.order_list.model().data(selected_index, Qt.UserRole)
 
         dialog = OrdersChangeDialog(None, item)
+        dialog.setWindowTitle("Изменение заказа")
         customers = self.getCustomers()
         dialog.setCustomers(list(map(lambda u: u['customer_name'], list(customers))))
         statuses = self.setStatuses()
@@ -292,7 +300,6 @@ class MainWindow(QMainWindow):
                     print(f"Error: {e}") # TODO: добавить warning
                     return
             self.orderLoad()
-
 
     def getOrders(self):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -362,13 +369,13 @@ class MainWindow(QMainWindow):
 
     def materialChange(self):
         if not self.ui.material_list.selectionModel(): 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected = self.ui.material_list.selectionModel().selectedIndexes()
         
         if not selected: 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected_index = selected[0]
@@ -403,13 +410,13 @@ class MainWindow(QMainWindow):
 
     def materialDelete(self):
         if not self.ui.material_list.selectionModel():
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
 
         selected = self.ui.material_list.selectionModel().selectedIndexes()
         
         if not selected:
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected_index = selected[0]
@@ -526,13 +533,13 @@ class MainWindow(QMainWindow):
 
     def employeeChange(self):
         if not self.ui.employee_list.selectionModel(): 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected = self.ui.employee_list.selectionModel().selectedIndexes()
         
         if not selected: 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         selected_index = selected[0]
         item = self.ui.employee_list.model().data(selected_index, Qt.UserRole)
@@ -590,13 +597,13 @@ class MainWindow(QMainWindow):
 
     def employeeDelete(self):
         if not self.ui.employee_list.selectionModel(): 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected = self.ui.employee_list.selectionModel().selectedIndexes()
         
         if not selected: 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         selected_index = selected[0]
         item = self.ui.employee_list.model().data(selected_index, Qt.UserRole)
@@ -688,13 +695,13 @@ class MainWindow(QMainWindow):
 
     def customerChange(self):
         if not self.ui.customer_list.selectionModel(): 
-            QMessageBox.warning(self, "Ошибка", "Выберите элемент")
+            MessageBox.warning(self, "Ошибка", "Выберите элемент")
             return
         
         selected = self.ui.customer_list.selectionModel().selectedIndexes()
         
         if not selected: 
-            QMessageBox.warning(self, "Ошибка", "Выберите элемент")
+            MessageBox.warning(self, "Ошибка", "Выберите элемент")
             return
         selected_index = selected[0]
         item = self.ui.customer_list.model().data(selected_index, Qt.UserRole)
@@ -730,13 +737,13 @@ class MainWindow(QMainWindow):
 
     def customerDelete(self):
         if not self.ui.customer_list.selectionModel(): 
-            QMessageBox.warning(self, "Ошибка", "Выберите элемент")
+            MessageBox.warning(self, "Ошибка", "Выберите элемент")
             return
         
         selected = self.ui.customer_list.selectionModel().selectedIndexes()
         
         if not selected: 
-            QMessageBox.warning(self, "Ошибка", "Выберите элемент")
+            MessageBox.warning(self, "Ошибка", "Выберите элемент")
             return
         selected_index = selected[0]
         item = self.ui.customer_list.model().data(selected_index, Qt.UserRole)
@@ -803,19 +810,19 @@ class MainWindow(QMainWindow):
                     conn.commit()
                 except Exception as e:
                     conn.rollback()
-                    QMessageBox.critical(self, "Ошибка", f"Ошибка при добавлении: {str(e)}")
+                    MessageBox.critical(self, "Ошибка", f"Ошибка при добавлении: {str(e)}")
                 finally:
                     self.productBatchesLoad()
 
     def productBatchesChange(self):
         if not self.ui.product_batches_list.selectionModel(): 
-            QMessageBox.warning(self, "Ошибка", "Выберите элемент")
+            MessageBox.warning(self, "Ошибка", "Выберите элемент")
             return
         
         selected = self.ui.product_batches_list.selectionModel().selectedIndexes()
         
         if not selected: 
-            QMessageBox.warning(self, "Ошибка", "Выберите элемент")
+            MessageBox.warning(self, "Ошибка", "Выберите элемент")
             return
         
         selected_index = selected[0]
@@ -876,7 +883,7 @@ class MainWindow(QMainWindow):
                     conn.commit()
                 except Exception as e:
                     conn.rollback()
-                    QMessageBox.critical(self, "Ошибка", f"Ошибка при обновлении: {str(e)}")
+                    MessageBox.critical(self, "Ошибка", f"Ошибка при обновлении: {str(e)}")
                 finally:
                     self.productBatchesLoad()
 
@@ -913,13 +920,13 @@ class MainWindow(QMainWindow):
         
     def productBatchesDelete(self):
         if not self.ui.product_batches_list.selectionModel():
-            QMessageBox.warning(self, "Ошибка", "Выберите элемент")
+            MessageBox.warning(self, "Ошибка", "Выберите элемент")
             return
 
         selected = self.ui.product_batches_list.selectionModel().selectedIndexes()
         
         if not selected:
-            QMessageBox.warning(self, "Ошибка", "Выберите элемент")
+            MessageBox.warning(self, "Ошибка", "Выберите элемент")
             return
         
         selected_index = selected[0]
@@ -983,13 +990,13 @@ class MainWindow(QMainWindow):
 
     def productChange(self):
         if not self.ui.product_list.selectionModel(): 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected = self.ui.product_list.selectionModel().selectedIndexes()
         
         if not selected: 
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected_index = selected[0]
@@ -1062,13 +1069,13 @@ class MainWindow(QMainWindow):
 
     def productDelete(self):
         if not self.ui.product_list.selectionModel():
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
 
         selected = self.ui.product_list.selectionModel().selectedIndexes()
         
         if not selected:
-            QMessageBox.warning(self, "Ошибка", "Выберете элемент")
+            MessageBox.warning(self, "Ошибка", "Выберете элемент")
             return
         
         selected_index = selected[0]

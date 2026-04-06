@@ -1,8 +1,11 @@
 <RCC>
     <qresource prefix="/icons">
-        <file>icons/1.png</file>
-        <file>icons/2.png</file>
-        <file>icons/3.png</file>
-        <file>icons/4.png</file>
+        <file>../icons/1.png</file>
+        <file>../icons/2.png</file>
+        <file>../icons/3.png</file>
+        <file>../icons/4.png</file>
+        <file>../icons/info.png</file>
+        <file>../icons/warning.png</file>
+        <file>../icons/house-with-window.png</file>
     </qresource>
 </RCC>

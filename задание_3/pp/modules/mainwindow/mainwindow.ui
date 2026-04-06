@@ -11,9 +11,9 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Информационная система для молочного комбината</string>
   </property>
-  <widget class="QWidget" name="central_widget">
+  <widget class="QWidget" name="main_layout">
    <property name="enabled">
     <bool>true</bool>
    </property>
