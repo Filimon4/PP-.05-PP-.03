@@ -41,12 +41,22 @@ class AuthDialog(QDialog):
                     er.code as role_code
                 from employees e
                 left join employee_roles er on er.id = e.role_id
-                where e.login = %(login)s and e.password = %(password)s
-            """, {'login': login, 'password': password})
+                where e.login = %(login)s
+            """, {'login': login})
             self.user = cur.fetchone()
 
-        if self.user is None:
-            MessageBox.warning(self, "Ошибка", "Вы ввели неверный логин или пароль. Пожалуйста проверьте ещё раз введенные данные")
+        if self.user['password'] != password:
+            MessageBox.warning(self, "Ошибка", "Вы ввели неверный пароль. Пожалуйста проверьте ещё раз введенные данные")
+            attempts = self.incFailedAttempts()
+            if attempts >= 3:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute("""
+                        update employees
+                        set blocked = true
+                        where id = %(id)s
+                    """, {'id': self.user['id']})
+                    conn.commit()
+                MessageBox.warning(self, "Ошибка", "Вы заблокированы. Обратитесь к администратору")
             return
         
         if self.user['blocked'] == True:
@@ -57,26 +67,8 @@ class AuthDialog(QDialog):
         if captcha.exec() == QDialog.DialogCode.Accepted:
             isRight = captcha.isRight()
             if not isRight:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                    cur.execute("""
-                        select
-                            e.failed_attempts
-                        from employees e
-                        where e.id = %(id)s
-                    """, {'id': self.user['id']})
-                    attempts = cur.fetchone()
-                
-                attempts['failed_attempts'] += 1
-
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                    cur.execute("""
-                        update employees
-                        set failed_attempts = %(attempts)s
-                        where id = %(id)s
-                    """, {'id': self.user['id'], 'attempts': attempts['failed_attempts']})
-                    conn.commit()
-
-                if attempts['failed_attempts'] >= 3:
+                attempts = self.incFailedAttempts()
+                if attempts >= 3:
                     with conn.cursor(cursor_factory=RealDictCursor) as cur:
                         cur.execute("""
                             update employees
@@ -95,4 +87,39 @@ class AuthDialog(QDialog):
             MessageBox.warning(self, "Ошибка", "Повторите ввод каптчи")
             return
 
+        self.resetFailedAttempts()
+
         super().accept()
+
+    def incFailedAttempts(self):
+        print(self.user)
+
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                select
+                    e.failed_attempts
+                from employees e
+                where e.id = %(id)s
+            """, {'id': self.user['id']})
+            attempts = cur.fetchone()
+        
+        attempts['failed_attempts'] += 1
+
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                update employees
+                set failed_attempts = %(attempts)s
+                where id = %(id)s
+            """, {'id': self.user['id'], 'attempts': attempts['failed_attempts']})
+            conn.commit()
+        
+        return attempts['failed_attempts']
+
+    def resetFailedAttempts(self):
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                update employees
+                set failed_attempts = 0
+                where id = %(id)s
+            """, {'id': self.user['id']})
+            conn.commit()
