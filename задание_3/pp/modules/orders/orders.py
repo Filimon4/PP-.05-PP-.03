@@ -105,39 +105,8 @@ class OrdersChangeDialog(OrdersAddDialog):
 
         self.orderItemsLoad()
         
-        if self.order['status_code'] == 'active':
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("""
-                    select
-                        pb.quantity,
-                        pb.order_id,
-                        pb.product_id
-                    from product_batches pb 
-                    left join orders o on pb.order_id = o.id
-                    left join products p on pb.product_id = p.id
-                    where o.id = %(order_id)s
-                """, {'order_id': self.order['id']})
-                self.batches = cur.fetchall()
-
-            close_button = QPushButton("Отменить")
-            self.ui.order_actions.addWidget(close_button)
-            close_button.clicked.connect(self.declineOrder)
-            
-            closed_ids = []
-
-            for item in self.orderItems:
-                total_batch_quantity = sum(
-                    batch['quantity'] for batch in self.batches 
-                    if batch['product_id'] == item['product_id']
-                )
-                
-                if total_batch_quantity >= item['quantity']:
-                    closed_ids.append(item['id'])
-
-            if len(closed_ids) == len(self.orderItems) and len(self.orderItems) > 0:
-                close_button = QPushButton("Закрыть")
-                self.ui.order_actions.addWidget(close_button)
-                close_button.clicked.connect(self.closeOrder)
+        self.updateOrderStatusButtons()
+        
     
     def declineOrder(self):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -338,6 +307,48 @@ class OrdersChangeDialog(OrdersAddDialog):
 
         model = OrderItemsListModel(self.orderItems)
         self.ui.order_item_list.setModel(model)
+
+    def batchesLoad(self):
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                select
+                    pb.quantity,
+                    pb.order_id,
+                    pb.product_id
+                from product_batches pb 
+                left join orders o on pb.order_id = o.id
+                left join products p on pb.product_id = p.id
+                where o.id = %(order_id)s
+            """, {'order_id': self.order['id']})
+            self.batches = cur.fetchall()
+
+    def getClosedOrderItems(self):
+        closed_ids = []
+
+        for item in self.orderItems:
+            total_batch_quantity = sum(
+                batch['quantity'] for batch in self.batches 
+                if batch['product_id'] == item['product_id']
+            )
+            
+            if total_batch_quantity >= item['quantity']:
+                closed_ids.append(item['id'])
+
+        return closed_ids
+
+    def updateOrderStatusButtons(self):
+        if self.order['status_code'] == 'active':
+            close_button = QPushButton("Отменить")
+            self.ui.order_actions.addWidget(close_button)
+            close_button.clicked.connect(self.declineOrder)
+            
+            self.batchesLoad()
+            closed_ids = self.getClosedOrderItems()
+
+            if len(closed_ids) == len(self.orderItems) and len(self.orderItems) > 0:
+                close_button = QPushButton("Закрыть")
+                self.ui.order_actions.addWidget(close_button)
+                close_button.clicked.connect(self.closeOrder)
 
     def getProducts(self):
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
